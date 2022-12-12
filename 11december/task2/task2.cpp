@@ -5,6 +5,9 @@
 #include <algorithm> 
 #include <cctype>
 #include <locale>
+#include <cmath>
+
+#include <boost/multiprecision/cpp_int.hpp>
 
 namespace util {
     std::vector<std::string> split(std::string stringtosplit, std::string delimiter) {
@@ -53,12 +56,13 @@ namespace util {
 
 struct Monkey {
     int monkeyid;
-    std::vector<int> monkeyitems;
+    std::vector<boost::multiprecision::cpp_int> monkeyitems;
     std::string operationsign;
     std::string operationnumber;
     int monkeydivtestnumber;
     int monkeytrue;
     int monkeyfalse;
+    int inspectioncount;
 };
 
 int main(){
@@ -93,25 +97,29 @@ int main(){
         newmonkey.monkeydivtestnumber = std::stoi(util::split(lines.at(i + 3), " ").at(util::split(lines.at(i + 3), " ").size() - 1));
         newmonkey.monkeytrue = std::stoi(util::split(lines.at(i + 4), " ").at(util::split(lines.at(i + 4), " ").size() - 1));
         newmonkey.monkeyfalse = std::stoi(util::split(lines.at(i + 5), " ").at(util::split(lines.at(i + 5), " ").size() - 1));
+        newmonkey.inspectioncount = 0;
         monkeys.push_back(newmonkey);
     }
 
-    // for(auto monkey : monkeys){
-    //     std::cout << monkey.monkeyid << " ";
-    //     for(auto item : monkey.monkeyitems){
-    //         std::cout << item << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+    for(auto monkey : monkeys){
+        std::cout << monkey.monkeyid << " ";
+        for(auto item : monkey.monkeyitems){
+            std::cout << item << " ";
+        }
+        std::cout << "\n";
+    }
     // apply rounds
-    int rounds = 1;
+    int rounds = 20;
     for(int round = 0; round < rounds; ++round){
+        if(round % 100 == 0){
+            std::cout << round << std::endl;
+        }
         for(int mindex = 0; mindex < monkeys.size(); ++mindex){
             for(int itemindex = 0; itemindex < monkeys[mindex].monkeyitems.size(); ++itemindex){
                 // parse item
-                int worry = monkeys[mindex].monkeyitems[itemindex];
+                boost::multiprecision::cpp_int worry = monkeys[mindex].monkeyitems[itemindex];
                 // check for "old"
-                int operationnum;
+                boost::multiprecision::cpp_int operationnum;
                 if(monkeys[mindex].operationnumber == "old"){
                     operationnum = worry;
                 } else {
@@ -124,10 +132,26 @@ int main(){
                     worry *= operationnum;
                 }
                 // relief
-                worry = (int) worry / 3;
+                // worry = (int) worry / 3;
+                // check which monkey should get it
+                if(worry % monkeys[mindex].monkeydivtestnumber == 0){
+                    monkeys[monkeys[mindex].monkeytrue].monkeyitems.emplace_back(worry);
+                } else {
+                    monkeys[monkeys[mindex].monkeyfalse].monkeyitems.emplace_back(worry);
+                }
+                // increase inspection count by 1
+                ++monkeys[mindex].inspectioncount;
             }
             // clear vector because all items have been moved
             monkeys[mindex].monkeyitems.clear();
         }
+    }
+
+    for(auto monkey : monkeys){
+        std::cout << monkey.monkeyid << " ";
+        for(auto item : monkey.monkeyitems){
+            std::cout << item << " ";
+        }
+        std::cout << "\n";
     }
 }
