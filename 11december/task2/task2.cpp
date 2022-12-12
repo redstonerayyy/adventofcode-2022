@@ -51,6 +51,15 @@ namespace util {
     }
 }
 
+struct Monkey {
+    int monkeyid;
+    std::vector<int> monkeyitems;
+    std::string operationsign;
+    std::string operationnumber;
+    int monkeydivtestnumber;
+    int monkeytrue;
+    int monkeyfalse;
+};
 
 int main(){
     // read file line by line
@@ -66,21 +75,59 @@ int main(){
     }
 
     // convert 6 lines to 1 monkey
+    std::vector<Monkey> monkeys;
+
     for(int i = 0; i < lines.size(); i += 6){
+        Monkey newmonkey;
         // id of monkey, should be unique from input counting up from 0
-        int monkeyid = std::stoi(util::replace(util::split(lines.at(i), " ").at(1), ";", ""));    
+        newmonkey.monkeyid = std::stoi(util::replace(util::split(lines.at(i), " ").at(1), ";", ""));    
         // items
         std::vector<std::string> partsitems = util::split(lines.at(i + 1), " ");
-        std::vector<int> items;
         for(int j = 2; j < partsitems.size(); ++j){
-            items.emplace_back(std::stoi(partsitems[j]));
+            newmonkey.monkeyitems.emplace_back(std::stoi(partsitems[j]));
         }
         // operation
-        std::string operationsign = util::split(lines.at(i + 2), " ").at(4);
-        int operationnumber = std::stoi(util::split(lines.at(i + 2), " ").at(5));
+        newmonkey.operationsign = util::split(lines.at(i + 2), " ").at(4);
+        newmonkey.operationnumber = util::split(lines.at(i + 2), " ").at(5);
         // test and possible monkeys to transfer item to
-        int monkeydivtestnumber = std::stoi(util::split(lines.at(i + 3), " ").at(lines.size() - 1));
-        int monkeytrue = std::stoi(util::split(lines.at(i + 4), " ").at(lines.size() - 1));
-        int monkeyfalse = std::stoi(util::split(lines.at(i + 5), " ").at(lines.size() - 1));
+        newmonkey.monkeydivtestnumber = std::stoi(util::split(lines.at(i + 3), " ").at(util::split(lines.at(i + 3), " ").size() - 1));
+        newmonkey.monkeytrue = std::stoi(util::split(lines.at(i + 4), " ").at(util::split(lines.at(i + 4), " ").size() - 1));
+        newmonkey.monkeyfalse = std::stoi(util::split(lines.at(i + 5), " ").at(util::split(lines.at(i + 5), " ").size() - 1));
+        monkeys.push_back(newmonkey);
+    }
+
+    // for(auto monkey : monkeys){
+    //     std::cout << monkey.monkeyid << " ";
+    //     for(auto item : monkey.monkeyitems){
+    //         std::cout << item << " ";
+    //     }
+    //     std::cout << "\n";
+    // }
+    // apply rounds
+    int rounds = 1;
+    for(int round = 0; round < rounds; ++round){
+        for(int mindex = 0; mindex < monkeys.size(); ++mindex){
+            for(int itemindex = 0; itemindex < monkeys[mindex].monkeyitems.size(); ++itemindex){
+                // parse item
+                int worry = monkeys[mindex].monkeyitems[itemindex];
+                // check for "old"
+                int operationnum;
+                if(monkeys[mindex].operationnumber == "old"){
+                    operationnum = worry;
+                } else {
+                    operationnum = std::stoi(monkeys[mindex].operationnumber); 
+                }
+                // apply operation
+                if(monkeys[mindex].operationsign == "+"){
+                    worry += operationnum;
+                } else if(monkeys[mindex].operationsign == "*"){
+                    worry *= operationnum;
+                }
+                // relief
+                worry = (int) worry / 3;
+            }
+            // clear vector because all items have been moved
+            monkeys[mindex].monkeyitems.clear();
+        }
     }
 }
