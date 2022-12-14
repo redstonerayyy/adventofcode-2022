@@ -37,6 +37,7 @@ with open(os.path.join(os.path.dirname(__file__), "input.txt")) as file:
 				else:
 					for x in range(p1[0], p2[0] + 1):
 						stone.append([x, p1[1]])
+	floory = ymax + 2
 
 # print(stone)
 print(xmin, xmax)
@@ -59,32 +60,52 @@ for s in stone:
 # add pouring point
 cave[0][500 - xmin] = "+"
 
+# temp
+temp = [["." for i in range((floory + 1) * 4)] for j in range(floory)]
+temp.append(["#" for i in range((floory + 1) * 4)])
+
+# projection of cave
+start = len(temp[0])//2 - (len(cave[0]) // 2)
+for y in range(0, len(cave)):
+	for x in range(0, len(cave[0])):
+		temp[y][x + start] = cave[y][x]
+
+cave = temp
+
+# print new cave
+for row in temp:
+	for part in row:
+		print(part, end=" ")
+	print("")
+
 # start pouring
 cametorest = 0
-sand = [500, 0]
+sand = [500 - xmin + start, 0]
 while True:
-	# down 
-	if sand[1] < len(cave) - 1:
-		if cave[sand[1] + 1][sand[0] - xmin] == ".":
-			sand = [sand[0], sand[1] + 1]
-			continue
+	# down
+	# if cametorest == 92:
+	# 	breakpoint()
+
+	if cave[sand[1]][sand[0]] == "o": # reached top
+		break
+	if cave[sand[1] + 1][sand[0]] == ".":
+		sand = [sand[0], sand[1] + 1]
+		continue
 
 	# down left
-	if sand[1] < len(cave) - 1 and (sand[0] - xmin - 1) >= 0 and sand[0] - xmin + 1 < len(cave[0]): 
-		if cave[sand[1] + 1][sand[0] - xmin - 1] == ".":
-			sand = [sand[0] - 1, sand[1] + 1]
-			continue
+	if cave[sand[1] + 1][sand[0] - 1] == ".":
+		sand = [sand[0] - 1, sand[1] + 1]
+		continue
 
 	# down right
-	if sand[1] < len(cave) - 1 and sand[0] - xmin + 1 < len(cave[0]) and (sand[0] - xmin - 1) >= 0: 
-		if cave[sand[1] + 1][sand[0] - xmin + 1] == ".": # down right
-			sand = [sand[0] + 1, sand[1] + 1]
-			continue
-		elif cave[sand[1] + 1][sand[0] - xmin + 1] == "o" or cave[sand[1] + 1][sand[0] - xmin + 1] == "#":
-			cave[sand[1]][sand[0] - xmin] = "o"
-			cametorest += 1
-			sand = [500, 0]
-			continue
+	if cave[sand[1] + 1][sand[0] + 1] == ".": # down right
+		sand = [sand[0] + 1, sand[1] + 1]
+		continue
+	elif cave[sand[1] + 1][sand[0] + 1] == "o" or cave[sand[1] + 1][sand[0] + 1] == "#":
+		cave[sand[1]][sand[0]] = "o"
+		cametorest += 1
+		sand = [500 - xmin + start, 0]
+		continue
 	
 	break # reached out of bounds
 
